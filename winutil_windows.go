@@ -44,3 +44,21 @@ func recycle(path string) error {
 func permanentDelete(path string) error { return os.RemoveAll(path) }
 
 func openInExplorer(path string) { _ = exec.Command("explorer", "/select,"+path).Start() }
+
+// Platform wording and defaults used by the shared screens.
+const (
+	trashName = "Recycle Bin"
+	fileMgr   = "explorer"
+)
+
+func defaultRoot() string {
+	root := os.Getenv("SystemDrive") + `\`
+	if root == `\` {
+		root = `C:\`
+	}
+	return root
+}
+
+// devID and skipDir let the disk scanner avoid pseudo or foreign file systems (Linux only).
+func devID(string) uint64         { return 0 }
+func skipDir(string, uint64) bool { return false }

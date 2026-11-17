@@ -538,9 +538,9 @@ func (m *model) footer() string {
 			what = fmt.Sprintf("%d items", len(m.targets))
 		}
 		return lipgloss.NewStyle().Foreground(cRed).Bold(true).Render(
-			fmt.Sprintf(" Delete %s (%s)?  [y] Recycle Bin   [p] PERMANENT   [any other key] cancel", what, human(tot)))
+			fmt.Sprintf(" Delete %s (%s)?  [y] "+trashName+"   [p] PERMANENT   [any other key] cancel", what, human(tot)))
 	}
-	help := " ↑↓ move · → open · ← back · space mark · c mark safe · u unmark · d delete · o explorer · r rescan · q quit"
+	help := " ↑↓ move · → open · ← back · space mark · c mark safe · u unmark · d delete · o " + fileMgr + " · r rescan · q quit"
 	if mk := m.markedList(); len(mk) > 0 {
 		var tot int64
 		for _, t := range mk {

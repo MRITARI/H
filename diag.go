@@ -63,7 +63,7 @@ func (d *diagModel) Init() tea.Cmd {
 	for i, def := range d.t.Defs {
 		i, def, gen := i, def, d.gen
 		cmds = append(cmds, func() (msg tea.Msg) {
-			probeSem <- struct{}{} // limit concurrent probes (each may start PowerShell)
+			probeSem <- struct{}{} // limit concurrent probes (each may start a helper process)
 			defer func() { <-probeSem }()
 			defer func() { // a crashing probe must not take the whole app down
 				if r := recover(); r != nil {
@@ -178,7 +178,7 @@ func (d *diagModel) onKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		default:
 			f := fixes[c.Fix]
 			if f.Admin && !isAdmin() {
-				d.status = "This fix needs administrator rights: go back to the main menu and press a to restart as administrator"
+				d.status = "This fix needs " + adminWord + " rights: go back to the main menu and press a to restart as " + adminWord
 			} else {
 				d.st, d.status = dsConfirm, ""
 			}

@@ -24,18 +24,6 @@ type menuItem struct {
 	Build        func() tool
 }
 
-var menuItems = []menuItem{
-	{Title: "Disk scanner", Blurb: "dirscope: what is using my disk space? safe-to-delete hints", Disk: true},
-	{Title: "Network diagnostics", Blurb: "no internet, slow Wi-Fi, DNS problems", Build: netTool},
-	{Title: "PC troubleshooter", Blurb: "general health: CPU, memory, disks, crashes, errors", Build: pcTool},
-	{Title: "Performance check", Blurb: "why is my PC slow? startup, temp files, load", Build: perfTool},
-	{Title: "Windows Update & services", Blurb: "updates failing, stuck or services stopped", Build: updateTool},
-	{Title: "Security check", Blurb: "Defender, firewall, UAC, BitLocker, risky settings", Build: securityTool},
-	{Title: "Hardware & battery", Blurb: "battery wear, drive health, drivers, BIOS, temperature", Build: hardwareTool},
-	{Title: "Printing & peripherals", Blurb: "printers, stuck print jobs, audio, Bluetooth, camera", Build: peripheralsTool},
-	{Title: "Quick fixes", Blurb: "common repairs in categories - each asks before running", Cats: true},
-}
-
 // app is the top-level model: a menu that opens one screen at a time.
 type app struct {
 	w, h     int
@@ -158,11 +146,11 @@ func (a *app) menuKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a, a.open(a.cursor)
 	case "a":
 		if a.admin {
-			a.note = "Already running as administrator."
-		} else if err := relaunchAsAdmin(); err != nil {
-			a.note = "Could not restart as administrator: " + err.Error()
+			a.note = "Already running as " + adminWord + "."
+		} else if cmd, err := elevate(); err != nil {
+			a.note = "Could not restart as " + adminWord + ": " + err.Error()
 		} else {
-			return a, tea.Quit // the elevated copy opens in a new window
+			return a, cmd // the elevated copy replaces this one
 		}
 	default:
 		if len(s) == 1 && s[0] >= '1' && s[0] <= '9' {
@@ -238,9 +226,9 @@ func (a *app) renderList(head []string, rows []listRow, cursor int, help string)
 }
 
 func (a *app) menuView() string {
-	who := sDim.Render("standard user - admin repairs are refused; press a to restart as administrator")
+	who := sDim.Render("standard user - admin repairs are refused; press a to restart as " + adminWord)
 	if a.admin {
-		who = lipgloss.NewStyle().Foreground(cGreen).Render("administrator - all fixes available")
+		who = lipgloss.NewStyle().Foreground(cGreen).Render(adminWord + " - all fixes available")
 	}
 	if a.note != "" {
 		who = lipgloss.NewStyle().Foreground(cYellow).Render(a.note)
@@ -250,7 +238,7 @@ func (a *app) menuView() string {
 		rows[i] = listRow{it.Title, it.Blurb}
 	}
 	head := []string{sTitle.Render("H"), who}
-	return a.renderList(head, rows, a.cursor, " ↑↓ move · enter open · 1-9 jump · a run as administrator · q quit")
+	return a.renderList(head, rows, a.cursor, " ↑↓ move · enter open · 1-9 jump · a run as "+adminWord+" · q quit")
 }
 
 func (a *app) catView() string {

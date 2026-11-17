@@ -23,7 +23,7 @@ func checkFits(t *testing.T, name, out string, w, h int) {
 }
 
 func TestViewFits(t *testing.T) {
-	root := os.Getenv("USERPROFILE") + `\Downloads`
+	root := testScanRoot()
 	m := newModel(root)
 	m.root = Scan(root, m.scanner)
 	m.cur, m.st = m.root, stBrowse
@@ -70,7 +70,7 @@ func TestDiagViewFits(t *testing.T) {
 }
 
 func TestMenuAndCategoryFit(t *testing.T) {
-	a := newApp(`C:\`)
+	a := newApp(defaultRoot())
 	for _, sz := range [][2]int{{60, 16}, {100, 30}, {160, 50}} {
 		a.w, a.h = sz[0], sz[1]
 		a.sc = scMenu
@@ -127,9 +127,6 @@ func TestFixesExist(t *testing.T) {
 		}
 	}
 }
-
-// liveTools lists every diagnostic screen.
-var liveTools = []func() tool{netTool, pcTool, perfTool, updateTool, securityTool, hardwareTool, peripheralsTool}
 
 // Runs every real check on this PC. Opt in with H_LIVE=1 (takes about a minute).
 func TestLiveChecks(t *testing.T) {

@@ -11,15 +11,12 @@ import (
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: H [folder-for-the-disk-scanner]   (default: system drive)")
+		fmt.Fprintln(os.Stderr, "usage: H [folder-for-the-disk-scanner]   (default: system drive / root)")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
 
-	root := os.Getenv("SystemDrive") + `\`
-	if root == `\` {
-		root = `C:\`
-	}
+	root := defaultRoot()
 	if flag.NArg() > 0 {
 		abs, err := filepath.Abs(flag.Arg(0))
 		if err != nil {

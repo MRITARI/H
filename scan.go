@@ -32,11 +32,13 @@ type Scanner struct {
 	Count atomic.Int64
 	Bytes atomic.Int64
 	sem   chan struct{}
+	dev   uint64 // device of the scan root (Linux)
 }
 
 func Scan(root string, s *Scanner) *Node {
 	n := &Node{Name: root, Path: root, IsDir: true}
 	s.sem = make(chan struct{}, runtime.NumCPU()*4)
+	s.dev = devID(root)
 	s.scanDir(n)
 	return n
 }
@@ -55,6 +57,9 @@ func (s *Scanner) scanDir(n *Node) {
 	for _, e := range entries {
 		if e.Type()&(os.ModeSymlink|os.ModeIrregular) != 0 {
 			continue // symlinks / junctions / reparse points: avoid loops & double counting
+		}
+		if e.IsDir() && skipDir(filepath.Join(n.Path, e.Name()), s.dev) {
+			continue // /proc, /sys, other mounts ...
 		}
 		if e.IsDir() {
 			c := &Node{Name: e.Name(), Path: filepath.Join(n.Path, e.Name()), IsDir: true, Parent: n}
